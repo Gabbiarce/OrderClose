@@ -83,7 +83,6 @@ function cargarExcel() {
             try {
                 let file = filePath.replace(/\\/g, '\\\\')
                 file += '.xlsx'
-                console.log(file);
                 xlsx.readFile(file);
                 excel = setExcel(file);
                 console.log("Datos del archivo Excel cargados correctamente.");
