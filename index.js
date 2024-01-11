@@ -9,8 +9,10 @@ const logRojo = '\x1b[31m%s\x1b[0m'
 const logVerde = '\x1b[32m%s\x1b[0m'
 
 let user;
-let excel;
-let sesion;
+let urlExcel;
+let excel = null;
+let estado = null;
+let yaSeLogeo = false;
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -21,34 +23,33 @@ run()
 
 async function run(){
     try {
-        //Logeamos el usuario, si da OK, retorna el token de autentication, de lo contrario devuelve null.
-        if(!user){
-           sesion = await ingresarUsuario()
-           //Cargamos la url del archivo de excel que queremos trabajar.
+        if(!yaSeLogeo){
+            await ingresarUsuario()
+        }else{
+            estado = await login(user)
+        }
+        if(excel === null){
+            //Cargamos la url del archivo de excel que queremos trabajar.
             excel = await cargarExcel();
         }else{
-            sesion = await login(user)
-            if(!sesion){
-                sesion = await ingresarUsuario()
-            }
+            await actualizarExcel()
         }
         //Trae la fila de la ultima OT que se modifico su columna ESTADO.
         let fila = ultimaOTmodificada();
         //Ciclamos todo el excel, en caso de tener inconveniente con la sesion salimos del ciclo.
-        while(fila <= cantidadDeOT() && sesion){
+        while(fila <= cantidadDeOT() && estado === 200){
             fila++;
-            sesion = await cierre(excel[devolverColumna('OT')+fila].v, fila, sesion)
+            estado = await cierre(excel[devolverColumna('OT')+fila].v, fila, estado)
         }
-    if(!sesion){
+    if(estado !== 200){
         console.log(logRojo,'Se corto el ciclo por error al logearse.\n');
-        validarInput(await continuar())
     }else{
         console.log(logVerde, 'Excel completado.');
-        rl.close();
     }
-    } catch (error) {
+    await validarInput(await continuar())
+    }catch (error) {
         console.error("Error:", error.message,"\n");
-        validarInput(await continuar())
+        await validarInput(await continuar())
     }
 }
 
@@ -57,14 +58,18 @@ async function ingresarUsuario() {
         "userName": await pedirUsuario(),
         "password": await pedirContraseña()
     };
-    let sesion = await login(user)
-    if(sesion){
+    estado = await login(user)
+    if(estado === 200){
         console.log(logVerde, 'Se ingreso el usuario correctamente.\n');
-        return sesion
+        yaSeLogeo = true
     }else{
-        console.log(logRojo, 'Error al logearse.\n');
+        if(estado === 400){
+            console.log(logRojo, 'Usuario o contraseña incorrectos.\n');
+        }else{
+            console.log(logRojo, 'Error al intentar logearse.\n');
+        }
         console.log("Por favor, ingresar el usuario nuevamente.");
-        ingresarUsuario()
+        await ingresarUsuario()
     }
 }
 
@@ -94,14 +99,14 @@ function pedirContraseña() {
     });
 }
 
-function cargarExcel() {
+async function cargarExcel() {
     return new Promise((resolve) => {
         rl.question("Ingrese la ruta del archivo Excel: ", (filePath) => {
             try {
-                let file = filePath.replace(/\\/g, '\\\\')
-                file += '.xlsx'
-                xlsx.readFile(file);
-                excel = setExcel(file);
+                urlExcel = filePath.replace(/\\/g, '\\\\')
+                urlExcel += '.xlsx'
+                xlsx.readFile(urlExcel);
+                excel = setExcel(urlExcel);
                 console.log(logVerde,'Datos del archivo Excel cargados correctamente.\n');
                 resolve(excel);
             } catch (error) {
@@ -110,6 +115,11 @@ function cargarExcel() {
             }
         });
     });
+}
+
+async function actualizarExcel(){
+    xlsx.readFile(urlExcel);
+    excel = setExcel(urlExcel);
 }
 
 function continuar() {
@@ -168,8 +178,8 @@ function devolverLocalidad(localidades, direccion){
     return localidad
 }
 
-async function cierre(ordenNumber, fila, sesion){
-    if(sesion){
+async function cierre(ordenNumber, fila, estado){
+    if(estado === 200){
         //Seteamos la orden que vamos a trabajar.
         setOrden(ordenNumber)
         //Funcion que verifica si la orden existe.
@@ -201,7 +211,7 @@ async function cierre(ordenNumber, fila, sesion){
                         //Retorna todos los motivos de cierres.
                         let motivos = await motive()
                         if(motivos){
-                            let text = ''
+                            let text;
                             let mostrarText;
                             //Cerramos la orden
                             await close(motivos, ordenDetails.clientDetails.serviceNumber)
@@ -211,6 +221,7 @@ async function cierre(ordenNumber, fila, sesion){
                                 text = "No se pudo cerrar la orden"
                                 mostrarText = text
                             }else{
+                                text = "OK"
                                 mostrarText = "La OT se cerro correctamente"
                             }
                             modificarExcel(fila,status,text)
@@ -242,11 +253,8 @@ async function cierre(ordenNumber, fila, sesion){
             }else{
                 //Si funcion no devuelve ninguno de esos estados es por que se corto la conexion.
                 text = "Hubo un error, verificar conexion."
-                sesion = await login(user)
                 //Intentamos conectarnos nuevamente
-                if(!sesion){
-                    sesion = await login(user)
-                }
+                estado = await login(user)
             }
             modificarExcel(fila,'',text)
             console.log(text,ordenNumber);
@@ -257,5 +265,5 @@ async function cierre(ordenNumber, fila, sesion){
         console.log(text,ordenNumber);
     }
 
-    return sesion
+    return estado
 }

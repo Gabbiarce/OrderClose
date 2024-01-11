@@ -24,11 +24,9 @@ async function checkRedirect(){
     if (error.response) {
         estado = error.response.status
     } else if (error.request) {
-        // The request was made, but no response was received
-        console.log("No response received from the server");
+        console.log("No se recibio respuesta del servidor");
     } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log("Error setting up the request:", error.message);
+        console.log("Error al configurar la solicitud: ", error.message);
     }
 });
   return estado

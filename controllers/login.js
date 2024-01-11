@@ -3,12 +3,12 @@ const { setToken } = require('./token');
 const { apiUrl, authenticateUrl, authorizeUrl } = require('./urls');
 
 async function login(body){
-  let data
+  let status
   let token
 
   await axios.post(apiUrl + authenticateUrl, body)
   .then(response => {
-      data = response
+      status = response.status
       token = response.data.jwtToken;
     return axios.get(apiUrl + authorizeUrl, {
       headers: {
@@ -20,10 +20,13 @@ async function login(body){
       token = response.data.jwtToken;
   })
   .catch(error => {
+    if(error.response){
+      status = error.response.status
+    }
   });
 
   setToken(token);
-  return data
+  return status
 }
 
 module.exports = {
