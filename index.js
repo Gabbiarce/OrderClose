@@ -5,8 +5,12 @@ const { setExcel, cantidadDeOT, ultimaOTmodificada, devolverColumna, modificarEx
 const { login } = require('./controllers/login');
 const { checkRedirect, order, availability, appointment, close, motive, setOrden, contact, search} = require('./controllers/order');
 
+const logRojo = '\x1b[31m%s\x1b[0m'
+const logVerde = '\x1b[32m%s\x1b[0m'
+
 let user;
 let excel;
+let sesion;
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -17,12 +21,17 @@ run()
 
 async function run(){
     try {
-        //Ingreso los datos necesarios
-        if(!user){
-            await ingresoDeDatos()
-        }
         //Logeamos el usuario, si da OK, retorna el token de autentication, de lo contrario devuelve null.
-        let sesion = await login(user)
+        if(!user){
+           sesion = await ingresarUsuario()
+           //Cargamos la url del archivo de excel que queremos trabajar.
+            excel = await cargarExcel();
+        }else{
+            sesion = await login(user)
+            if(!sesion){
+                sesion = await ingresarUsuario()
+            }
+        }
         //Trae la fila de la ultima OT que se modifico su columna ESTADO.
         let fila = ultimaOTmodificada();
         //Ciclamos todo el excel, en caso de tener inconveniente con la sesion salimos del ciclo.
@@ -31,31 +40,39 @@ async function run(){
             sesion = await cierre(excel[devolverColumna('OT')+fila].v, fila, sesion)
         }
     if(!sesion){
-        console.log("Se corto el ciclo por error al logearse.");
-        await continuar() === '1' ? run() : rl.close();
+        console.log(logRojo,'Se corto el ciclo por error al logearse.\n');
+        validarInput(await continuar())
     }else{
-        console.log("Excel completado.");
+        console.log(logVerde, 'Excel completado.');
         rl.close();
     }
     } catch (error) {
-        console.error("Error:", error.message);
-        await continuar() === '1' ? run() : rl.close();
+        console.error("Error:", error.message,"\n");
+        validarInput(await continuar())
     }
 }
 
-async function ingresoDeDatos() {
+async function ingresarUsuario() {
     user = {
         "userName": await pedirUsuario(),
         "password": await pedirContraseña()
     };
-    excel = await cargarExcel();
+    let sesion = await login(user)
+    if(sesion){
+        console.log(logVerde, '✔ Se ingreso el usuario correctamente.\n');
+        return sesion
+    }else{
+        console.log(logRojo, '✗ Error al logearse.');
+        console.log("\nFavor de ingresar el usuario nuevamente.\n");
+        ingresarUsuario()
+    }
 }
 
 function pedirUsuario() {
     return new Promise((resolve) => {
-        rl.question("Ingrese usuario de red: ", (userAnswer) => {
+        rl.question("\nIngrese usuario de red: ", (userAnswer) => {
             if (!userAnswer.trim()) {
-                console.log("Por favor, ingrese un usuario válido.");
+                console.log(logRojo,'Por favor, ingrese un usuario válido.\n');
                 resolve(pedirUsuario());
             } else {
                 resolve(userAnswer);
@@ -69,7 +86,7 @@ function pedirContraseña() {
         const passwordAnswer = prompt("Ingrese contraseña de red: ", { echo: '*' });
 
         if (!passwordAnswer.trim()) {
-            console.log("Por favor, ingrese una contraseña válida.");
+            console.log(logRojo,'Por favor, ingrese una contraseña válida.\n');
             resolve(pedirContraseña());
         } else {
             resolve(passwordAnswer);
@@ -78,18 +95,18 @@ function pedirContraseña() {
 }
 
 function cargarExcel() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         rl.question("Ingrese la ruta del archivo Excel: ", (filePath) => {
             try {
                 let file = filePath.replace(/\\/g, '\\\\')
                 file += '.xlsx'
                 xlsx.readFile(file);
                 excel = setExcel(file);
-                console.log("Datos del archivo Excel cargados correctamente.");
+                console.log(logVerde,'✔ Datos del archivo Excel cargados correctamente.\n');
                 resolve(excel);
             } catch (error) {
-                console.error("Error al cargar el archivo Excel:", error.message);
-                reject(error);
+                console.error(logRojo,'✗ Error al cargar el archivo Excel:', error.message);
+                resolve(cargarExcel());
             }
         });
     });
@@ -99,21 +116,33 @@ function continuar() {
     return new Promise((resolve) => {
         console.log("*** ¿Desea continuar? ***"
                     ,"\n1 - Para continuar"
-                    ,"\n2 - Salir"
+                    ,"\n2 - Cambiar de usuario"
+                    ,"\n3 - Salir"
         );
         rl.question("", (input) => {
             if (!input.trim()) {
-                console.log("Por favor, ingrese un numero valido.");
+                console.log(logRojo,'Por favor, ingrese un numero valido.\n');
                 resolve(continuar());
-            }else if(input === '1' || input === '2'){
+            }else if(input === '1' || input === '2' || input === '3'){
                 resolve(input);
             }else{
-                console.log("Por favor, ingrese un numero entre 1 y 2.");
+                console.log(logRojo,'Por favor, ingrese un numero entre 1 y 3.\n');
                 resolve(continuar());
             }
             
         });
     });
+}
+
+async function validarInput(input){
+    if(input === '1'){
+        run();
+    }else if(input === '2'){
+        sesion = await ingresarUsuario()
+        run();
+    }else{
+        rl.close();
+    }
 }
 
 async function devolverEstado(){
