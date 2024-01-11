@@ -59,20 +59,20 @@ async function ingresarUsuario() {
     };
     let sesion = await login(user)
     if(sesion){
-        console.log(logVerde, '✔ Se ingreso el usuario correctamente.\n');
+        console.log(logVerde, 'Se ingreso el usuario correctamente.\n');
         return sesion
     }else{
-        console.log(logRojo, '✗ Error al logearse.');
-        console.log("\nFavor de ingresar el usuario nuevamente.\n");
+        console.log(logRojo, 'Error al logearse.\n');
+        console.log("Por favor, ingresar el usuario nuevamente.");
         ingresarUsuario()
     }
 }
 
 function pedirUsuario() {
     return new Promise((resolve) => {
-        rl.question("\nIngrese usuario de red: ", (userAnswer) => {
+        rl.question("Ingrese usuario de red: ", (userAnswer) => {
             if (!userAnswer.trim()) {
-                console.log(logRojo,'Por favor, ingrese un usuario válido.\n');
+                console.log(logRojo,'\nPor favor, ingrese un usuario válido.');
                 resolve(pedirUsuario());
             } else {
                 resolve(userAnswer);
@@ -86,7 +86,7 @@ function pedirContraseña() {
         const passwordAnswer = prompt("Ingrese contraseña de red: ", { echo: '*' });
 
         if (!passwordAnswer.trim()) {
-            console.log(logRojo,'Por favor, ingrese una contraseña válida.\n');
+            console.log(logRojo,'\nPor favor, ingrese una contraseña válida.');
             resolve(pedirContraseña());
         } else {
             resolve(passwordAnswer);
@@ -102,10 +102,10 @@ function cargarExcel() {
                 file += '.xlsx'
                 xlsx.readFile(file);
                 excel = setExcel(file);
-                console.log(logVerde,'✔ Datos del archivo Excel cargados correctamente.\n');
+                console.log(logVerde,'Datos del archivo Excel cargados correctamente.\n');
                 resolve(excel);
             } catch (error) {
-                console.error(logRojo,'✗ Error al cargar el archivo Excel:', error.message);
+                console.error(logRojo,'Error al cargar el archivo Excel:', error.message,'\n');
                 resolve(cargarExcel());
             }
         });
@@ -114,7 +114,7 @@ function cargarExcel() {
 
 function continuar() {
     return new Promise((resolve) => {
-        console.log("*** ¿Desea continuar? ***"
+        console.log("\n*** ¿Desea continuar? ***"
                     ,"\n1 - Para continuar"
                     ,"\n2 - Cambiar de usuario"
                     ,"\n3 - Salir"
