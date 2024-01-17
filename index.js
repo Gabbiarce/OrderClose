@@ -1,7 +1,7 @@
 const readline = require('readline');
 const prompt = require('prompt-sync')();
 const xlsx = require('xlsx');
-const { setExcel, cantidadDeOT, ultimaOTmodificada, devolverColumna, modificarExcel, guardarExcel} = require('./controllers/excel');
+const { setExcel, cantidadDeOT, primeraOtVacia, devolverColumna, modificarExcel} = require('./controllers/excel');
 const { login } = require('./controllers/login');
 const { checkRedirect, order, availability, appointment, close, motive, setOrden, contact, search} = require('./controllers/order');
 
@@ -34,12 +34,15 @@ async function run(){
         }else{
             await actualizarExcel()
         }
-        //Trae la fila de la ultima OT que se modifico su columna ESTADO.
-        let fila = ultimaOTmodificada();
+        //Trae primer OT que tenga la celda descripcion vacia.
+        let fila = primeraOtVacia();
         //Ciclamos todo el excel, en caso de tener inconveniente con la sesion salimos del ciclo.
-        while(fila <= cantidadDeOT() && estado === 200){
+        while (fila <= cantidadDeOT() && estado === 200) {
+            let descripcionCelda = excel[devolverColumna('DESCRIPCION') + fila];
+            if (descripcionCelda == null || descripcionCelda.v == null) {
+                estado = await cierre(excel[devolverColumna('OT') + fila].v, fila, estado);
+            }
             fila++;
-            estado = await cierre(excel[devolverColumna('OT')+fila].v, fila, estado)
         }
     if(estado !== 200){
         console.log(logRojo,'Se corto el ciclo por error al logearse.\n');

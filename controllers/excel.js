@@ -33,24 +33,26 @@ function cantidadDeOT(){
     return celdas.length
 }
 
-function ultimaOTmodificada(){
-    let nombreColumna = 'ESTADO'
+function primeraOtVacia(){
+    let nombreColumna = 'DESCRIPCION'
     let letraColumna = devolverColumna(nombreColumna)
-    let ultimaFila = 1;
+    let primeraFilaVacia = 1;
+    let fila = 2;
+    let seEncontroCeldaVacia = false;
 
     if (letraColumna) {
-        let celdas = Object.keys(excel).filter(celda => {
-            let columna = celda.startsWith(letraColumna);
-            let esFila2oSuperior = parseInt(celda.substring(1)) >= 2;
-            return columna && esFila2oSuperior && excel[celda].v !== undefined;
-        });
-        if(celdas.length >= 1){
-            ultimaFila = Math.max(...celdas.map(celda => parseInt(celda.substring(1))));
+        while (fila <= cantidadDeOT() && !seEncontroCeldaVacia) {
+            let celda = letraColumna + fila;
+            if (excel[celda] == null || excel[celda].v == null) {
+                primeraFilaVacia = fila;
+                seEncontroCeldaVacia = true;
+            }
+            fila++;
         }
     }else {
         console.log('No se encontró la columna con '+nombreColumna+' en la fila 1.');
     }
-    return ultimaFila
+    return primeraFilaVacia
 }
 
 function devolverColumna(name){
@@ -83,7 +85,7 @@ function guardarExcel() {
 module.exports = {
 setExcel, 
 cantidadDeOT, 
-ultimaOTmodificada, 
+primeraOtVacia, 
 devolverColumna, 
 modificarExcel, 
 guardarExcel,
