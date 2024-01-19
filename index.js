@@ -36,8 +36,14 @@ async function run(){
         }
         //Trae primer OT que tenga la celda descripcion vacia.
         let fila = primeraOtVacia();
+        cantOT = cantidadDeOT()
+        if(cantOT === 0){
+            console.log(logRojo,'No hay OT para recorrer.\n');
+            await validarInput(await continuar())
+            return;
+        }
         //Ciclamos todo el excel, en caso de tener inconveniente con la sesion salimos del ciclo.
-        while (fila <= cantidadDeOT() && estado === 200) {
+        while (fila <= cantOT + 1 && estado === 200) {
             let descripcionCelda = excel[devolverColumna('DESCRIPCION') + fila];
             if (descripcionCelda == null || descripcionCelda.v == null) {
                 estado = await cierre(excel[devolverColumna('OT') + fila].v, fila, estado);
@@ -125,7 +131,7 @@ async function actualizarExcel(){
     excel = setExcel(urlExcel);
 }
 
-function continuar() {
+async function continuar() {
     return new Promise((resolve) => {
         console.log("\n*** ¿Desea continuar? ***"
                     ,"\n1 - Para continuar"

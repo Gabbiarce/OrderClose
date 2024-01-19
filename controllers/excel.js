@@ -36,23 +36,22 @@ function cantidadDeOT(){
 function primeraOtVacia(){
     let nombreColumna = 'DESCRIPCION'
     let letraColumna = devolverColumna(nombreColumna)
-    let primeraFilaVacia = 1;
-    let fila = 2;
+    let fila = 1;
     let seEncontroCeldaVacia = false;
 
     if (letraColumna) {
+        console.log();
         while (fila <= cantidadDeOT() && !seEncontroCeldaVacia) {
+            fila++;
             let celda = letraColumna + fila;
             if (excel[celda] == null || excel[celda].v == null) {
-                primeraFilaVacia = fila;
                 seEncontroCeldaVacia = true;
             }
-            fila++;
         }
     }else {
         console.log('No se encontró la columna con '+nombreColumna+' en la fila 1.');
     }
-    return primeraFilaVacia
+    return fila
 }
 
 function devolverColumna(name){
