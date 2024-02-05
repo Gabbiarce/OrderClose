@@ -69,11 +69,21 @@ function devolverColumna(name){
     return letraColumna
 }
 
-function modificarExcel(fila, estado, descripcion, motivo){
+function modificarExcel(fila, estado, descripcion){
     const columnaEstado = devolverColumna('ESTADO');
     const columnaDescripcion = devolverColumna('DESCRIPCION');
     XLSX.utils.sheet_add_aoa(excel, [[estado]], { origin: `${columnaEstado}${fila}` });
     XLSX.utils.sheet_add_aoa(excel, [[descripcion]], { origin: `${columnaDescripcion}${fila}` });
+    guardarExcel()
+}
+
+function modificarExcel(fila, estado, descripcion, error){
+    const columnaEstado = devolverColumna('ESTADO');
+    const columnaDescripcion = devolverColumna('DESCRIPCION');
+    const columnaError = devolverColumna('ERROR');
+    XLSX.utils.sheet_add_aoa(excel, [[estado]], { origin: `${columnaEstado}${fila}` });
+    XLSX.utils.sheet_add_aoa(excel, [[descripcion]], { origin: `${columnaDescripcion}${fila}` });
+    XLSX.utils.sheet_add_aoa(excel, [[error]], { origin: `${columnaError}${fila}` });
     guardarExcel()
 }
 

@@ -223,7 +223,7 @@ async function cierre(ordenNumber, fila, estado){
                             let text;
                             let mostrarText;
                             //Cerramos la orden
-                            await close(motivos, ordenDetails.clientDetails.serviceNumber)
+                            let error = await close(motivos, ordenDetails.clientDetails.serviceNumber)
                             let status = await devolverEstado()
                             //Retornamos nuevamente el estado de la orden y verificamos si esta en 'F'.
                             if(status !== 'F'){
@@ -233,7 +233,7 @@ async function cierre(ordenNumber, fila, estado){
                                 text = "OK"
                                 mostrarText = "La OT se cerro correctamente"
                             }
-                            modificarExcel(fila,status,text)
+                            modificarExcel(fila,status,text,error)
                             console.log(mostrarText,ordenNumber);
                         }
                     }else{

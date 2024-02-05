@@ -140,6 +140,7 @@ function searchDate(disponibilidad) {
 async function close(motivos, NIM) {
     let closeUrl = `/AR/order/${ordenId}/close`;
     let motivo = identificarMotivo(motivos.data, NIM)
+    let mensaje = "";
 
     body = {
         "reasonId": motivo
@@ -151,7 +152,9 @@ async function close(motivos, NIM) {
       },
     })
     .catch(error => {
+      mensaje = error.response.data.error.message;
     });
+    return mensaje
 }
 
 async function motive() {
