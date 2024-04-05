@@ -199,6 +199,7 @@ async function cierre(ordenNumber, fila, estado){
             let ordenDetails = await order()
             //Retorna el estado que tiene esa orden.
             let localidadExcel = ordenDetails.clientDetails.address.city
+            let partidoExcel = ordenDetails.clientDetails.address.department
             let status = await devolverEstado()
             //Verificamos si el estado de la orden esta Finalizada.
             if(status !== 'F'){
@@ -234,25 +235,25 @@ async function cierre(ordenNumber, fila, estado){
                                 text = "OK"
                                 mostrarText = "La OT se cerro correctamente"
                             }
-                            modificarExcel(fila,status,text,error,localidadExcel)
+                            modificarExcel(fila,status,text,error,localidadExcel,partidoExcel)
                             console.log(mostrarText,ordenNumber);
                         }
                     }else{
                         let status = await devolverEstado()
                         const text = "No se pudo agendar la orden"
-                        modificarExcel(fila,status,text,'',localidadExcel)
+                        modificarExcel(fila,status,text,'',localidadExcel,partidoExcel)
                         console.log(text,ordenNumber);
                     }
                 }else{
                     let status = await devolverEstado()
                     const text = "Error al traer la disponibilidad"
-                    modificarExcel(fila,status,text,'',localidadExcel)
+                    modificarExcel(fila,status,text,'',localidadExcel,partidoExcel)
                     console.log(text,ordenNumber);
                 }
             }else{
                 let status = await devolverEstado()
                 const text = "La orden ya esta cerrada"
-                modificarExcel(fila,status,text,'',localidadExcel)
+                modificarExcel(fila,status,text,'',localidadExcel,partidoExcel)
                 console.log(text,ordenNumber);
             }
         }else{
