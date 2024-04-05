@@ -198,6 +198,7 @@ async function cierre(ordenNumber, fila, estado){
             //Retorna el objeto que contiene todos los datos del cliente.
             let ordenDetails = await order()
             //Retorna el estado que tiene esa orden.
+            let localidadExcel = ordenDetails.clientDetails.address.city
             let status = await devolverEstado()
             //Verificamos si el estado de la orden esta Finalizada.
             if(status !== 'F'){
@@ -233,25 +234,25 @@ async function cierre(ordenNumber, fila, estado){
                                 text = "OK"
                                 mostrarText = "La OT se cerro correctamente"
                             }
-                            modificarExcel(fila,status,text,error)
+                            modificarExcel(fila,status,text,error,localidadExcel)
                             console.log(mostrarText,ordenNumber);
                         }
                     }else{
                         let status = await devolverEstado()
                         const text = "No se pudo agendar la orden"
-                        modificarExcel(fila,status,text)
+                        modificarExcel(fila,status,text,'',localidadExcel)
                         console.log(text,ordenNumber);
                     }
                 }else{
                     let status = await devolverEstado()
                     const text = "Error al traer la disponibilidad"
-                    modificarExcel(fila,status,text)
+                    modificarExcel(fila,status,text,'',localidadExcel)
                     console.log(text,ordenNumber);
                 }
             }else{
                 let status = await devolverEstado()
                 const text = "La orden ya esta cerrada"
-                modificarExcel(fila,status,text)
+                modificarExcel(fila,status,text,'',localidadExcel)
                 console.log(text,ordenNumber);
             }
         }else{
@@ -265,12 +266,12 @@ async function cierre(ordenNumber, fila, estado){
                 //Intentamos conectarnos nuevamente
                 estado = await login(user)
             }
-            modificarExcel(fila,'',text)
+            modificarExcel(fila,'',text,'','')
             console.log(text,ordenNumber);
         }
     }else{
         const text = "Error al logearse"
-        modificarExcel(fila,'',text)
+        modificarExcel(fila,'',text,'','')
         console.log(text,ordenNumber);
     }
 
