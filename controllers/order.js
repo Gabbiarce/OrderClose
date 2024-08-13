@@ -204,13 +204,15 @@ async function contact(orden){
   });
 }
 
-function identificarMotivo(motivos, NIM){
-    let nameCierre
+function identificarMotivo(motivos){
+    let nameCierre = "Liberación MDU No Exitosa"
+    /*
     if(NIM[0] === "0"){
       nameCierre = "Liberación MDU No Exitosa"
     }else{
       nameCierre = "Retiro STB no Libera Pasiva"
     }
+    */
     motivos = motivos.filter(item => item.name === nameCierre);
     return motivos[0].id
 }

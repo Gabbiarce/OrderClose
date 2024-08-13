@@ -164,7 +164,7 @@ async function cierre(ordenNumber, fila, estado){
                             let text;
                             let mostrarText;
                             //Cerramos la orden
-                            let error = await close(motivos, ordenDetails.clientDetails.serviceNumber)
+                            let error = await close(motivos)
                             let status = await devolverEstado()
                             //Retornamos nuevamente el estado de la orden y verificamos si esta en 'F'.
                             if(status !== 'F'){
