@@ -5,6 +5,16 @@ let excel;
 let workbook;
 let url;
 
+function crearExcel(urlExcel) {
+    if(urlExcel){
+        url = urlExcel
+        workbook = XLSX.readFile(url);
+        const sheet_name = workbook.SheetNames[0];
+        excel = workbook.Sheets[sheet_name];
+    }
+    return excel
+}
+
 function setExcel(urlExcel) {
     if(urlExcel){
         url = urlExcel
@@ -94,4 +104,5 @@ primeraOtVacia,
 devolverColumna, 
 modificarExcel, 
 guardarExcel,
+crearExcel
 };

@@ -2,9 +2,14 @@ const axios = require('axios');
 const { setToken } = require('./token');
 const { apiUrl, authenticateUrl, authorizeUrl } = require('./urls');
 
-async function login(body){
+async function login(usuario){
   let status
   let token
+
+  let body = {
+    "password": usuario.password,
+    "userName": usuario.username
+  }
 
   await axios.post(apiUrl + authenticateUrl, body)
   .then(response => {
